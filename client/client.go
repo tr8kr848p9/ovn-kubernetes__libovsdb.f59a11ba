@@ -989,7 +989,7 @@ func (o *ovsdbClient) monitor(ctx context.Context, cookie MonitorCookie, reconne
 	case ovsdb.ConditionalMonitorSinceRPC:
 		var reply ovsdb.MonitorCondSinceReply
 		err = o.rpcClient.CallWithContext(ctx, monitor.Method, args, &reply)
-		if err == nil {
+		if err == nil && reply.Found {
 			monitor.LastTransactionID = reply.LastTransactionID
 			lastTransactionFound = true
 		}
@@ -1006,7 +1006,7 @@ func (o *ovsdbClient) monitor(ctx context.Context, cookie MonitorCookie, reconne
 			if monitor.Method == ovsdb.ConditionalMonitorSinceRPC {
 				o.logger.V(3).Error(err, "method monitor_cond_since not supported, falling back to monitor_cond")
 				monitor.Method = ovsdb.ConditionalMonitorRPC
-				return o.monitor(ctx, cookie, true, monitor)
+				return o.monitor(ctx, cookie, reconnecting, monitor)
 			}
 			if monitor.Method == ovsdb.ConditionalMonitorRPC {
 				o.logger.V(3).Error(err, "method monitor_cond not supported, falling back to monitor")
@@ -1030,7 +1030,7 @@ func (o *ovsdbClient) monitor(ctx context.Context, cookie MonitorCookie, reconne
 	// server. In this case the reply contains only updates to the existing
 	// cache data, while otherwise it includes complete DB data so we must
 	// purge to get rid of old rows.
-	if reconnecting && (len(db.monitors) > 0 || !lastTransactionFound) {
+	if reconnecting && (len(db.monitors) > 1 || !lastTransactionFound) {
 		db.cache.Purge(db.model)
 	}
 
@@ -1047,7 +1047,7 @@ func (o *ovsdbClient) monitor(ctx context.Context, cookie MonitorCookie, reconne
 	}
 
 	// populate any deferred updates
-	db.deferUpdates = true
+	db.deferUpdates = false
 	for _, update := range db.deferredUpdates {
 		if update.updates != nil {
 			if err = db.cache.Populate(*update.updates); err != nil {
