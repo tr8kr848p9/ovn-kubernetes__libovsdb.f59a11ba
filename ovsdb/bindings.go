@@ -334,9 +334,9 @@ func ValidateMutation(column *ColumnSchema, mutator Mutator, value any) error {
 			// RFC7047 says a <set> may be an <atom> with a single
 			// element. Check if we can store this value in our column
 			if reflect.TypeOf(value).Kind() != reflect.Slice {
-				if NativeType(column) != reflect.TypeOf(value) {
+				if NativeType(column) != reflect.SliceOf(reflect.TypeOf(value)) {
 					return NewErrWrongType(fmt.Sprintf("Mutation %s of single value in to column %s", mutator, column),
-						reflect.SliceOf(reflect.TypeOf(value)).String(), NativeType(column).String())
+						NativeType(column).String(), reflect.SliceOf(reflect.TypeOf(value)).String())
 				}
 				return nil
 			}
@@ -346,7 +346,7 @@ func ValidateMutation(column *ColumnSchema, mutator Mutator, value any) error {
 			}
 			return nil
 		default:
-			return validateMutationAtomic(column.Type, mutator, value)
+			return validateMutationAtomic(column.TypeObj.Key.Type, mutator, value)
 		}
 	case TypeMap:
 		switch mutator {
@@ -359,7 +359,7 @@ func ValidateMutation(column *ColumnSchema, mutator Mutator, value any) error {
 			return nil
 		case MutateOperationDelete:
 			// Value must be a map of the same kind or a set of keys to delete
-			if reflect.TypeOf(value) != NativeType(column) ||
+			if reflect.TypeOf(value) != NativeType(column) &&
 				reflect.TypeOf(value) != reflect.SliceOf(NativeTypeFromAtomic(column.TypeObj.Key.Type)) {
 				return NewErrWrongType(fmt.Sprintf("Mutation %s of column %s", mutator, column),
 					"compatible map type", value)
