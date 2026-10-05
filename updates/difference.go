@@ -81,34 +81,46 @@ func setDifference(a, b any) (any, bool) {
 	if !av.IsValid() && !bv.IsValid() {
 		return nil, false
 	} else if (!av.IsValid() || av.Len() == 0) && bv.IsValid() {
-		return b, bv.Len() == 0
+		return b, bv.Len() != 0
 	} else if (!bv.IsValid() || bv.Len() == 0) && av.IsValid() {
 		return a, av.Len() != 0
 	}
 
+	// From https://docs.openvswitch.org/en/latest/ref/ovsdb-server.7/#update2-notification
+	// The difference between two sets are all elements that only belong to one
+	// of the sets.
 	difference := make(map[any]struct{}, bv.Len())
 	for i := 0; i < bv.Len(); i++ {
+		// supossedly we are working with comparable atomic types with no
+		// pointers so we can use the values as map key
 		difference[bv.Index(i).Interface()] = struct{}{}
 	}
-	j := av.Len() - 1
+	j := av.Len()
 	for i := 0; i < j; {
 		vv := av.Index(i)
 		vi := vv.Interface()
 		if _, ok := difference[vi]; ok {
+			// this value of 'a' is in 'b', so remove it from 'a'; to do that,
+			// overwrite it with the last value and re-evaluate
 			vv.Set(av.Index(j - 1))
+			// decrease where the last 'a' value is at
 			j--
+			// remove from 'b' values
 			delete(difference, vi)
 		} else {
+			// this value of 'a' is not in 'b', evaluate the next value
 			i++
 		}
 	}
+	// trim the slice to the actual values held
 	av = av.Slice(0, j)
 	for item := range difference {
+		// this value of 'b' is not in 'a', so add it
 		av = reflect.Append(av, reflect.ValueOf(item))
 	}
 
 	if av.Len() == 0 {
-		return reflect.Zero(av.Type()).Interface(), true
+		return reflect.Zero(av.Type()).Interface(), false
 	}
 
 	return av.Interface(), true
