@@ -60,7 +60,7 @@ func (t *Transaction) Transact(operations ...ovsdb.Operation) ([]*ovsdb.Operatio
 	// Every Insert operation must have a UUID
 	for i := range operations {
 		op := &operations[i]
-		if op.Op == ovsdb.OperationInsert {
+		if op.Op == ovsdb.OperationInsert && op.UUID == "" {
 			op.UUID = uuid.NewString()
 		}
 	}
@@ -91,7 +91,7 @@ func (t *Transaction) Transact(operations ...ovsdb.Operation) ([]*ovsdb.Operatio
 			r = t.Wait(op.Table, op.Timeout, op.Where, op.Columns, op.Until, op.Rows)
 		case ovsdb.OperationCommit:
 			durable := op.Durable
-			r = t.Commit(!*durable)
+			r = t.Commit(*durable)
 		case ovsdb.OperationAbort:
 			r = t.Abort()
 		case ovsdb.OperationComment:
@@ -113,7 +113,8 @@ func (t *Transaction) Transact(operations ...ovsdb.Operation) ([]*ovsdb.Operatio
 			u = nil
 		}
 
-		results[i] = &r
+		result := r
+		results[i] = &result
 
 		// if an operation failed, no need to process any further operation
 		if r.Error != "" {
@@ -127,7 +128,7 @@ func (t *Transaction) Transact(operations ...ovsdb.Operation) ([]*ovsdb.Operatio
 	}
 
 	// if there is no updates, no need to do any further validation
-	if len(update.GetUpdatedTables()) != 0 {
+	if len(update.GetUpdatedTables()) == 0 {
 		return results, updates.NewDatabaseUpdate(update, nil)
 	}
 
